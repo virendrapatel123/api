@@ -9,3 +9,10 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Showroom(models.Model):
+    name=models.CharField(max_length=24)
+    location=models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.name

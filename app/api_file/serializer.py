@@ -1,26 +1,21 @@
 from rest_framework import serializers
-from app.models import Product
+from app.models import Product,Showroom
 
-def alphanumeric(value):
-    if not str(value).isalpha():
-        raise serializers.ValidationError('number must be alphanumeric')
 
-class ProductSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name=serializers.CharField(validators=[alphanumeric])
-    description=serializers.CharField()
-    price=serializers.IntegerField()
+class ShowroomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Showroom
+        fields="__all__"
+
+class ProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+       model = Product
+       fields ='__all__'
+    #    exclude=['name']
+       
     
-    def create(self, validated_data):
-        
-        return Product.objects.create(**validated_data)
     
-    def update(self, instance, validated_data):
-        instance.name=validated_data.get('name', instance.name)
-        instance.description=validated_data.get('description', instance.description)
-        instance.price=validated_data.get('price', instance.price)
-        instance.save()
-        return instance
     
     def validate_price(self, value):
         if value < 1000:

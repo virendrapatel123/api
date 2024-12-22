@@ -1,66 +1,54 @@
 # views.py
 from django.shortcuts import render, redirect
-from django.shortcuts import HttpResponse
-from django.http import JsonResponse
-from .models import Product
-from .api_file.serializer import ProductSerializer
+from .models import Product,Showroom
+from .api_file.serializer import ProductSerializer,ShowroomSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
-def form_page(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        price = request.POST.get('price')
+from rest_framework.views import APIView
+from rest_framework.authentication import BasicAuthentication,SessionAuthentication
+from rest_framework.permissions import IsAuthenticated , AllowAny,IsAdminUser
 
-        Product.objects.create(name=name, description=description, price=price)
-        return redirect("/table")
+class showroom_view(APIView):
+    # authentication_classes=[SessionAuthentication]
+    # authentication_classes=[BasicAuthentication]
 
-    return render(request, 'form.html')
+    # permission_classes=[IsAuthenticated]
+    # permission_classes=[AllowAny]
+    # permission_classes=[IsAdminUser]
 
-
-# def product_table(request):
-#     products = Product.objects.all()
-#     return render(request, 'table.html', {'products': products})
-
-
-# def update(request, pk):
-#     product = Product.objects.get(pk=pk)
-#     if request.method == 'POST':
-#         product.name = request.POST.get('name')
-#         product.description = request.POST.get('description')
-#         product.price = request.POST.get('price')
-#         product.save()
-#         return redirect('/table')
-
-#     return render(request, 'update.html', {'product': product})
-
-
-# def delete(request, pk):
-#     product = Product.objects.get(pk=pk)
-#     product.delete()
+    def get(self,request):
+        showroom=Showroom.objects.all()
+        serializer=ShowroomSerializer(showroom, many=True)
+        return Response(serializer.data)
     
-#     return redirect('/table',id)
+    def post(self,request):
+        serializer=ShowroomSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
 
-# def home(request):
-#     product=Product.objects.all()
+class showroom_detail(APIView):
+    def get(self,request,pk):
+        showroom=Showroom.objects.get(pk=pk)
+        serializer=ShowroomSerializer(showroom)
+        return Response(serializer.data)
     
-#     data={
-#         'product': list(product.values()) 
-#     }
+    def put(self,request,pk):
+        showroom=Showroom.objects.get(pk=pk)
+        serializer=ShowroomSerializer(showroom,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response("invali data")
+    def delete(self,request,pk):
+        showroom=Showroom.objects.get(pk=pk)
+        showroom.delete()
+        return Response("the data is delete successfully")
 
-#     return JsonResponse(data)
 
-# def detail(request,pk):
-#     product=Product.objects.get(id=pk)
 
-#     data={
-#        'name': product.name,
-#        'description':product.description,
-#        'price':product.price,
-#        'created_at':product.created_at
-#     }
-#     return JsonResponse(data)
 
 @csrf_exempt
 @api_view(['GET','POST'])
